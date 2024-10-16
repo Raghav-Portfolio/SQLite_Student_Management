@@ -1,31 +1,34 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication, QVBoxLayout, QLabel, QWidget, QGridLayout, QLineEdit,\
-     QPushButton
+from PyQt6.QtWidgets import *
 import sys
 from datetime import datetime
 
-class AgeCalculator(QWidget):
+class SpeedCalculator(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Age Calculator')
+        self.setWindowTitle('Speed Calculator')
         grid = QGridLayout()
         
         #Create Widgets 
-        self.name_label = QLabel('Name: ')
-        self.name_line_edit = QLineEdit()
+        distance_label = QLabel('Distance: ')
+        self.distance_input = QLineEdit()
         
-        dob_label = QLabel('Date of Birth MM/DD/YYYY: ')
-        self.dob_edit_line = QLineEdit()
+        time_label = QLabel('Time: ')
+        self.time_input = QLineEdit()
         
-        calculate_button = QPushButton('Calculate Age')
+        self.unit_combo = QComboBox()
+        self.unit_combo.addItems(['Metric(km)', 'Imperial(miles)'])
+        
+        calculate_button = QPushButton('Calculate Average Speed')
         calculate_button.clicked.connect(self.calculate_age)
-        self.output_label = QLabel('Output:')
+        self.output_label = QLabel('Average Speed:')
         
-        grid.addWidget(self.name_label,0,0) #add name label at position 0,0
-        grid.addWidget(self.name_line_edit,0,1) 
-        grid.addWidget(dob_label,1,0) 
-        grid.addWidget(self.dob_edit_line,1,1) 
-        grid.addWidget(calculate_button,2,0,1,2) #The last two arguments signify 
+        grid.addWidget(distance_label,0,0) #add name label at position 0,0
+        grid.addWidget(self.distance_input,0,1) 
+        grid.addWidget(self.unit_combo,0,2) 
+        grid.addWidget(time_label, 1,0)
+        grid.addWidget(self.time_input,1,1) 
+        grid.addWidget(calculate_button,2,1) #The last two arguments signify 
         #that the button should cover 1 row and both columns
         grid.addWidget(self.output_label,3,0,1,2) 
         
@@ -34,13 +37,21 @@ class AgeCalculator(QWidget):
         # We have to use the self keyword to access the super class
         
     def calculate_age(self):
-        current_year = datetime.now().year
-        dob = self.dob_edit_line.text()  #change dob_edit_line from local variable to instance variable
-        year_of_birth = datetime.strptime(dob, "%m/%d/%Y").date().year
-        age = current_year - year_of_birth
-        self.output_label.setText(f'{self.name_line_edit.text()} is {age} years old')
+        distance = float(self.distance_input.text())
+        time = float(self.time_input.text())
+        speed = distance/time
+
+        if self.unit_combo.currentText() == 'Metric(km)':
+            speed = round(speed, 2)
+            unit = 'km/h'
+        if self.unit_combo.currentText() == 'Imperial(miles)':
+            speed = round(speed*0.621371, 2)
+            unit = 'mph'
+        #display the result
+        self.output_label.setText(f"Average Speed: {speed} {unit}")
+        
         
 app = QApplication(sys.argv)        
-age = AgeCalculator()
-age.show()
+speed = SpeedCalculator()
+speed.show()
 sys.exit(app.exec())
