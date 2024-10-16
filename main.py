@@ -13,7 +13,7 @@ class MainWindow(QMainWindow): #this class allows us to add functionalities like
         
         file_menu = self.menuBar().addMenu('&File') #adding '&' before the name of the menu is standard practice
         help_menu = self.menuBar().addMenu('&Help')
-        
+        edit_menu = self.menuBar().addMenu('&Edit')
         
         add_student = QAction('Add Student', self)
         add_student.triggered.connect(self.insert)
@@ -21,6 +21,10 @@ class MainWindow(QMainWindow): #this class allows us to add functionalities like
         
         about_action = QAction('About', self) #Adding self in both instances of QAction will connect them to the class
         help_menu.addAction(about_action)
+        
+        search_action = QAction('Search', self)
+        search_action.triggered.connect(self.popup)
+        edit_menu.addAction(search_action)
         
         self.table = QTableWidget()
         self.table.setColumnCount(4)
@@ -32,6 +36,10 @@ class MainWindow(QMainWindow): #this class allows us to add functionalities like
     def insert(self):
         dialog = InsertDialog()
         dialog.exec()
+        
+    def popup(self):
+        window = SearchPopup()
+        window.exec()
         
     def load_data(self):
         """ Interact with the SQL Table """
@@ -45,6 +53,39 @@ class MainWindow(QMainWindow): #this class allows us to add functionalities like
                 self.table.setItem(row_number, columm_number,QTableWidgetItem(str(data)))
         connection.close()
         
+class SearchPopup(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Insert Student Data')
+        self.setFixedHeight(300)
+        self.setFixedWidth(300)
+        
+        layout = QVBoxLayout() 
+        
+        self.searchbar = QLineEdit()
+        self.searchbar.setPlaceholderText('Type Item To Search')
+        layout.addWidget(self.searchbar)
+        
+        search = QPushButton("Search")
+        search.clicked.connect(self.search_item)
+        layout.addWidget(search)
+        
+        self.setLayout(layout)
+    
+    def search_item(self):
+        name = self.searchbar.text()
+        connection = sqlite3.connect('database.db')
+        cursor = connection.cursor()
+        result = cursor.execute('SELECT * FROM students WHERE name = ?', (name,))
+        rows = list(result)
+        print(rows)
+        items = main.table.findItems(name, Qt.MatchFlag.MatchFixedString)
+        for item in items:
+            print(item)
+            main.table.item(item.row(), 1).setSelected(True)
+        cursor.close()
+        connection.close()
+            
 class InsertDialog(QDialog):
     def __init__(self):
         super().__init__()
