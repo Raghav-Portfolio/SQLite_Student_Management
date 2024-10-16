@@ -6,6 +6,14 @@ import sqlite3
 
 from PyQt6.QtWidgets import QWidget
 
+class DataBaseConnection:
+    def __init__(self, database_file = 'database.db'):
+        self.database_file = database_file
+        
+    def connect(self):
+        connection = sqlite3.connect(self.database_file)
+        return connection
+
 class MainWindow(QMainWindow): #this class allows us to add functionalities like a tool bar, status bar, menu bar etc
     def __init__(self):
         super().__init__()
@@ -65,7 +73,7 @@ class MainWindow(QMainWindow): #this class allows us to add functionalities like
         
     def load_data(self):
         """ Interact with the SQL Table """
-        connection = sqlite3.connect('database.db')
+        connection = DataBaseConnection().connect()
         result = connection.execute("SELECT * FROM students")
         self.table.setRowCount(0)
         #populate the table with the data now
@@ -115,7 +123,7 @@ class DeleteDialog(QDialog):
         index = main.table.currentRow() 
         student_id = main.table.item(index, 0).text()
         
-        connection = sqlite3.connect('database.db')
+        connection = DataBaseConnection().connect()
         cursor = connection.cursor()
         cursor.execute("DELETE from students WHERE id = ?", (student_id, )) #Tuple needs a comma to be read as a tuple
         connection.commit() 
@@ -175,7 +183,7 @@ class EditDialog(QDialog):
         self.setLayout(layout)
     
     def update_student(self):
-        connection = sqlite3.connect('database.db')
+        connection = DataBaseConnection().connect()
         cursor = connection.cursor()
         cursor.execute('UPDATE students SET name = ?, course = ?, mobile = ? WHERE id =?', 
                        (self.student_name.text(), 
@@ -210,7 +218,7 @@ class SearchPopup(QDialog):
     
     def search_item(self):
         name = self.searchbar.text()
-        connection = sqlite3.connect('database.db')
+        connection = DataBaseConnection().connect()
         cursor = connection.cursor()
         result = cursor.execute('SELECT * FROM students WHERE name = ?', (name,))
         rows = list(result)
@@ -258,7 +266,7 @@ class InsertDialog(QDialog):
         name = self.student_name.text()
         course = self.course_name.itemText(self.course_name.currentIndex()) #itemText as it is a combobox
         mobile = self.number.text()
-        connection = sqlite3.connect('database.db')
+        connection = DataBaseConnection().connect()
         cursor = connection.cursor()
         cursor.execute ("INSERT INTO students (name, course, mobile) VALUES (?,?,?)",
                         (name, course, mobile)
