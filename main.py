@@ -1,6 +1,6 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import *
-from PyQt6.QtGui import QAction
+from PyQt6.QtGui import QAction, QIcon
 import sys
 import sqlite3
 
@@ -10,19 +10,20 @@ class MainWindow(QMainWindow): #this class allows us to add functionalities like
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Student Management System')
+        self.setMinimumSize(800,600)
         
         file_menu = self.menuBar().addMenu('&File') #adding '&' before the name of the menu is standard practice
         help_menu = self.menuBar().addMenu('&Help')
         edit_menu = self.menuBar().addMenu('&Edit')
         
-        add_student = QAction('Add Student', self)
+        add_student = QAction(QIcon("icons/icons/add.png"),'Add Student', self)
         add_student.triggered.connect(self.insert)
         file_menu.addAction(add_student)
         
         about_action = QAction('About', self) #Adding self in both instances of QAction will connect them to the class
         help_menu.addAction(about_action)
         
-        search_action = QAction('Search', self)
+        search_action = QAction(QIcon('icons/icons/search.png'),'Search', self)
         search_action.triggered.connect(self.popup)
         edit_menu.addAction(search_action)
         
@@ -32,14 +33,12 @@ class MainWindow(QMainWindow): #this class allows us to add functionalities like
         self.table.verticalHeader().setVisible(False)
         self.setCentralWidget(self.table)
         
-
-    def insert(self):
-        dialog = InsertDialog()
-        dialog.exec()
-        
-    def popup(self):
-        window = SearchPopup()
-        window.exec()
+        #Create and add Toolbar
+        toolbar = QToolBar()
+        toolbar.setMovable(True)
+        self.addToolBar(toolbar)
+        toolbar.addAction(add_student)
+        toolbar.addAction(search_action)
         
     def load_data(self):
         """ Interact with the SQL Table """
@@ -52,6 +51,15 @@ class MainWindow(QMainWindow): #this class allows us to add functionalities like
             for columm_number, data in enumerate(row_data):
                 self.table.setItem(row_number, columm_number,QTableWidgetItem(str(data)))
         connection.close()
+        
+    def insert(self):
+        dialog = InsertDialog()
+        dialog.exec()
+        
+    def popup(self):
+        window = SearchPopup()
+        window.exec()
+        
         
 class SearchPopup(QDialog):
     def __init__(self):
