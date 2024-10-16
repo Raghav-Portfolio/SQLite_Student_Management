@@ -93,11 +93,43 @@ class MainWindow(QMainWindow): #this class allows us to add functionalities like
         
         
 class DeleteDialog(QDialog):
-    # def __init(self):
-    #     super().__init__()
-    #     self.setWindowTitle('Edit')
-    pass
-    
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Update Student Data')
+        self.setFixedHeight(100)
+        self.setFixedWidth(250)
+        
+        layout = QGridLayout()
+        confirmation = QLabel('Are you sure you want to delete?')
+        yes = QPushButton('Yes')
+        no = QPushButton('No')
+        layout.addWidget(confirmation,0,0,1,2)
+        layout.addWidget(yes, 1,0)
+        layout.addWidget(no,1,1)
+        self.setLayout(layout)
+        
+        yes.clicked.connect(self.delete_student)
+        
+    def delete_student(self):
+        #Get selected row and student_ID
+        index = main.table.currentRow() 
+        student_id = main.table.item(index, 0).text()
+        
+        connection = sqlite3.connect('database.db')
+        cursor = connection.cursor()
+        cursor.execute("DELETE from students WHERE id = ?", (student_id, )) #Tuple needs a comma to be read as a tuple
+        connection.commit() 
+        cursor.close()
+        connection.close()
+        main.load_data()   
+        
+        self.close()
+        
+        confirmation_widget = QMessageBox()    
+        confirmation_widget.setWindowTitle('Success')
+        confirmation_widget.setText('The record was deleted successfully!')
+        confirmation_widget.exec()
+                
 class EditDialog(QDialog):
     def __init__(self):
         super().__init__()
