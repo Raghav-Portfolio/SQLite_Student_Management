@@ -29,7 +29,7 @@ class MainWindow(QMainWindow): #this class allows us to add functionalities like
         
         self.table = QTableWidget()
         self.table.setColumnCount(4)
-        self.table.setHorizontalHeaderLabels(('ID','Name','Course','Mobile Number')) #  this method expects a tuple  
+        self.table.setHorizontalHeaderLabels(('ID','Name','Course','Mobile')) #  this method expects a tuple  
         self.table.verticalHeader().setVisible(False)
         self.setCentralWidget(self.table)
         
@@ -54,6 +54,7 @@ class MainWindow(QMainWindow): #this class allows us to add functionalities like
         delete_button = QPushButton('Delete Record')
         delete_button.clicked.connect(self.delete)
         
+        #remove any buttons that have been previously added
         children = self.findChildren(QPushButton)
         if children:
             for child in children:
@@ -98,10 +99,63 @@ class DeleteDialog(QDialog):
     pass
     
 class EditDialog(QDialog):
-    # def __init(self):
-    #     super().__init__()
-    #     self.setWindowTitle('Edit')
-    pass
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Update Student Data')
+        self.setFixedHeight(300)
+        self.setFixedWidth(300)
+        
+        layout = QVBoxLayout()
+        
+       
+        
+        #Get Student Name from Selected Row
+        index = main.table.currentRow() #returns the index of the selected row
+        student_name = main.table.item(index, 1).text()
+        
+        #Get ID from selected row
+        self.student_id = main.table.item(index, 0).text()
+        
+        #Add Student Name Widget
+        self.student_name = QLineEdit(student_name)
+        self.student_name.setPlaceholderText('Name')
+        layout.addWidget(self.student_name)
+        
+        #Add Courses Dropdown Menu
+        course_name = main.table.item(index, 2).text()
+        self.course_name = QComboBox()
+        courses = ['Biology','Math','Astronomy', 'Physics']
+        self.course_name.addItems(courses)
+        self.course_name.setCurrentText(course_name)
+        layout.addWidget(self.course_name)
+        
+        #Add mobile no. widget
+        default_number = main.table.item(index, 3).text()
+        self.number = QLineEdit(default_number)
+        self.number.setPlaceholderText('Phone Number')
+        layout.addWidget(self.number)
+        
+        #Add submit button
+        submit = QPushButton("Submit")
+        submit.clicked.connect(self.update_student)
+        layout.addWidget(submit)
+        
+        self.setLayout(layout)
+    
+    def update_student(self):
+        connection = sqlite3.connect('database.db')
+        cursor = connection.cursor()
+        cursor.execute('UPDATE students SET name = ?, course = ?, mobile = ? WHERE id =?', 
+                       (self.student_name.text(), 
+                        self.course_name.itemText(self.course_name.currentIndex()), #ComboBox needs itemText 
+                        self.number.text(),
+                        self.student_id)
+                       )
+        connection.commit()
+        cursor.close()
+        connection.close()
+        #Refresh the table
+        main.load_data()
             
 class SearchPopup(QDialog):
     def __init__(self):
