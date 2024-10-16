@@ -40,6 +40,28 @@ class MainWindow(QMainWindow): #this class allows us to add functionalities like
         toolbar.addAction(add_student)
         toolbar.addAction(search_action)
         
+        #Create and add Status Bar
+        self.statusbar = QStatusBar()
+        self.setStatusBar(self.statusbar)
+        
+        #Detect a cell being clicked on
+        self.table.cellClicked.connect(self.cell_clicked)
+
+    def cell_clicked(self):
+        edit_button = QPushButton('Edit Record')
+        edit_button.clicked.connect(self.edit)
+        
+        delete_button = QPushButton('Delete Record')
+        delete_button.clicked.connect(self.delete)
+        
+        children = self.findChildren(QPushButton)
+        if children:
+            for child in children:
+                self.statusbar.removeWidget(child)            
+        
+        self.statusbar.addWidget(edit_button)
+        self.statusbar.addWidget(delete_button)
+        
     def load_data(self):
         """ Interact with the SQL Table """
         connection = sqlite3.connect('database.db')
@@ -60,7 +82,27 @@ class MainWindow(QMainWindow): #this class allows us to add functionalities like
         window = SearchPopup()
         window.exec()
         
+    def edit(self):
+        dialog = EditDialog()
+        dialog.exec()
         
+    def delete(self):
+        dialog = DeleteDialog()
+        dialog.exec()
+        
+        
+class DeleteDialog(QDialog):
+    # def __init(self):
+    #     super().__init__()
+    #     self.setWindowTitle('Edit')
+    pass
+    
+class EditDialog(QDialog):
+    # def __init(self):
+    #     super().__init__()
+    #     self.setWindowTitle('Edit')
+    pass
+            
 class SearchPopup(QDialog):
     def __init__(self):
         super().__init__()
